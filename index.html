@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudOps Manager — Phase 0</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
+    --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+    --blue: #58a6ff; --pk: #ffa657; --fk: #79c0ff;
+  }
+  @media(prefers-color-scheme:light){
+    :root{ --bg:#f6f8fa; --surface:#fff; --surface2:#f0f2f5;
+      --border:#d0d7de; --text:#1f2328; --muted:#636c76;
+      --blue:#0969da; --pk:#bc4c00; --fk:#0550ae; }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'SF Mono','Fira Code','Consolas',monospace;background:var(--bg);color:var(--text);min-height:100vh;padding:24px 20px}
+  header{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+  .badge{display:inline-block;font-size:11px;padding:2px 10px;border-radius:20px;background:#1f6feb22;color:var(--fk);border:1px solid #1f6feb44;margin-bottom:10px;letter-spacing:.5px}
+  h1{font-size:21px;font-weight:700;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:13px}
+  .tabs{display:flex;gap:2px;margin-bottom:18px;border-bottom:1px solid var(--border);overflow-x:auto}
+  .tab{padding:8px 16px;cursor:pointer;font-size:12px;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;white-space:nowrap;transition:color .15s}
+  .tab:hover{color:var(--text)}
+  .tab.on{color:var(--text);border-bottom-color:var(--blue)}
+  .panel{display:none}.panel.on{display:block}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto}
+  .leg{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+  .li{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+  .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  pre{font-size:12px;line-height:1.75;white-space:pre;overflow-x:auto;padding:4px 0}
+  .kw{color:#ff7b72}.ty{color:#79c0ff}.at{color:#ffa657}.cm{color:#8b949e;font-style:italic}.en{color:#d2a8ff}.st{color:#a5d6ff}
+  .enum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:4px}
+  .enum-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .enum-head{padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.3px}
+  .enum-val{padding:4px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)}
+  .arch-note{margin-top:14px;padding:12px 16px;background:var(--surface2);border-radius:6px;border-left:3px solid var(--blue);font-size:12px;color:var(--muted);line-height:1.7}
+  .arch-note strong{color:var(--text)}
+</style>
+</head>
+<body>
+<header>
+  <div class="badge">PHASE 0 — BEFORE WRITING CODE</div>
+  <h1>CloudOps Manager</h1>
+  <p class="sub">Data Model · Architecture · Prisma Schema · Enums</p>
+</header>
+
+<div class="tabs">
+  <button class="tab on"  onclick="show('erd',this)">📊 ERD — 8 Entities</button>
+  <button class="tab"     onclick="show('arch',this)">🏗️ Architecture</button>
+  <button class="tab"     onclick="show('schema',this)">🗃️ Prisma Schema</button>
+  <button class="tab"     onclick="show('enums',this)">📋 Enums</button>
+</div>
+
+<!-- ═══════════════════════════ ERD TAB ═══════════════════════════ -->
+<div id="erd" class="panel on">
+  <div class="card">
+<svg viewBox="0 0 760 722" width="100%" style="max-width:760px;display:block;min-width:600px" xmlns="http://www.w3.org/2000/svg">
+<rect width="760" height="722" fill="#0d1117"/>
+
+<!-- ── RELATIONSHIP LINES (behind entities) ── -->
+<!-- 1. Team → User  (User.teamId FK)  1:N -->
+<line x1="205" y1="80" x2="250" y2="80" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="5,3"/>
+<polygon points="246,76 255,80 246,84" fill="#58a6ff"/>
+<text x="227" y="73" font-family="monospace" font-size="9" fill="#58a6ff" text-anchor="middle">1:N</text>
+
+<!-- 2. Team → Project  (Project.teamId FK)  1:N -->
+<line x1="112" y1="140" x2="112" y2="198" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="5,3"/>
+<polygon points="108,194 112,203 116,194" fill="#58a6ff"/>
+<text x="125" y="172" font-family="monospace" font-size="9" fill="#58a6ff">1:N</text>
+
+<!-- 3. Project → Server  (Server.projectId FK)  1:N -->
+<path d="M210,278 L232,278 L232,314 L251,314" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="5,3"/>
+<polygon points="247,310 256,314 247,318" fill="#58a6ff"/>
+<text x="220" y="272" font-family="monospace" font-size="9" fill="#58a6ff">1:N</text>
+
+<!-- 4. Server → Application  (App.serverId FK)  1:N -->
+<line x1="480" y1="278" x2="531" y2="278" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="5,3"/>
+<polygon points="527,274 536,278 527,282" fill="#58a6ff"/>
+<text x="505" y="271" font-family="monospace" font-size="9" fill="#58a6ff" text-anchor="middle">1:N</text>
+
+<!-- 5. Server → Metric  (Metric.serverId FK)  1:N -->
+<path d="M480,370 L510,370 L510,508 L531,508" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="5,3"/>
+<polygon points="527,504 536,508 527,512" fill="#58a6ff"/>
+<text x="518" y="438" font-family="monospace" font-size="9" fill="#58a6ff">1:N</text>
+
+<!-- 6. Server → Alert  (Alert.serverId FK)  1:N -->
+<path d="M367,428 L367,463 L355,463 L355,507" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="5,3"/>
+<polygon points="351,503 355,512 359,503" fill="#58a6ff"/>
+<text x="375" y="468" font-family="monospace" font-size="9" fill="#58a6ff">1:N</text>
+
+<!-- 7. Alert → Incident  (Incident.alertId FK)  1:N -->
+<path d="M255,597 L237,597 L237,579 L223,579" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="5,3"/>
+<polygon points="227,575 218,579 227,583" fill="#58a6ff"/>
+<text x="237" y="592" font-family="monospace" font-size="9" fill="#58a6ff" text-anchor="middle">1:N</text>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ENTITY: Team  x=20 y=20 w=185 h=120 -->
+<!-- ══════════════════════════════════════════════════ -->
+<rect x="20" y="20" width="185" height="120" rx="6" fill="#161b22" stroke="#30363d"/>
+<rect x="20" y="20" width="185" height="28" rx="6" fill="#2563eb"/>
+<rect x="20" y="38" width="185" height="10" fill="#2563eb"/>
+<text x="112" y="39" font-family="monospace" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle">Team</text>
+<!-- id PK -->
+<text x="30" y="64" font-family="monospace" font-size="10" fill="#ffa657">● id</text>
+<text x="196" y="64" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID</text>
+<line x1="20" y1="68" x2="205" y2="68" stroke="#21262d"/>
+<text x="30" y="82" font-family="monospace" font-size="10" fill="#e6edf3">name</text>
+<text x="196" y="82" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="20" y1="86" x2="205" y2="86" stroke="#21262d"/>
+<text x="30" y="100" font-family="monospace" font-size="10" fill="#e6edf3">description</text>
+<text x="196" y="100" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String?</text>
+<line x1="20" y1="104" x2="205" y2="104" stroke="#21262d"/>
+<text x="30" y="118" font-family="monospace" font-size="10" fill="#e6edf3">createdAt</text>
+<text x="196" y="118" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">DateTime</text>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ENTITY: User  x=255 y=20 w=200 h=174 -->
+<!-- ══════════════════════════════════════════════════ -->
+<rect x="255" y="20" width="200" height="174" rx="6" fill="#161b22" stroke="#30363d"/>
+<rect x="255" y="20" width="200" height="28" rx="6" fill="#2563eb"/>
+<rect x="255" y="38" width="200" height="10" fill="#2563eb"/>
+<text x="355" y="39" font-family="monospace" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle">User</text>
+<text x="265" y="64" font-family="monospace" font-size="10" fill="#ffa657">● id</text>
+<text x="446" y="64" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID</text>
+<line x1="255" y1="68" x2="455" y2="68" stroke="#21262d"/>
+<text x="265" y="82" font-family="monospace" font-size="10" fill="#e6edf3">email</text>
+<text x="446" y="82" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="255" y1="86" x2="455" y2="86" stroke="#21262d"/>
+<text x="265" y="100" font-family="monospace" font-size="10" fill="#e6edf3">passwordHash</text>
+<text x="446" y="100" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="255" y1="104" x2="455" y2="104" stroke="#21262d"/>
+<text x="265" y="118" font-family="monospace" font-size="10" fill="#e6edf3">firstName</text>
+<text x="446" y="118" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="255" y1="122" x2="455" y2="122" stroke="#21262d"/>
+<text x="265" y="136" font-family="monospace" font-size="10" fill="#e6edf3">lastName</text>
+<text x="446" y="136" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="255" y1="140" x2="455" y2="140" stroke="#21262d"/>
+<text x="265" y="154" font-family="monospace" font-size="10" fill="#e6edf3">role</text>
+<text x="446" y="154" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Role</text>
+<line x1="255" y1="158" x2="455" y2="158" stroke="#21262d"/>
+<text x="265" y="172" font-family="monospace" font-size="10" fill="#79c0ff">◆ teamId</text>
+<text x="446" y="172" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID FK</text>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ENTITY: Project  x=20 y=200 w=190 h=156 -->
+<!-- ══════════════════════════════════════════════════ -->
+<rect x="20" y="200" width="190" height="156" rx="6" fill="#161b22" stroke="#30363d"/>
+<rect x="20" y="200" width="190" height="28" rx="6" fill="#7c3aed"/>
+<rect x="20" y="218" width="190" height="10" fill="#7c3aed"/>
+<text x="115" y="219" font-family="monospace" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle">Project</text>
+<text x="30" y="244" font-family="monospace" font-size="10" fill="#ffa657">● id</text>
+<text x="201" y="244" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID</text>
+<line x1="20" y1="248" x2="210" y2="248" stroke="#21262d"/>
+<text x="30" y="262" font-family="monospace" font-size="10" fill="#e6edf3">name</text>
+<text x="201" y="262" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="20" y1="266" x2="210" y2="266" stroke="#21262d"/>
+<text x="30" y="280" font-family="monospace" font-size="10" fill="#e6edf3">environment</text>
+<text x="201" y="280" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Env</text>
+<line x1="20" y1="284" x2="210" y2="284" stroke="#21262d"/>
+<text x="30" y="298" font-family="monospace" font-size="10" fill="#e6edf3">status</text>
+<text x="201" y="298" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">ProjStatus</text>
+<line x1="20" y1="302" x2="210" y2="302" stroke="#21262d"/>
+<text x="30" y="316" font-family="monospace" font-size="10" fill="#79c0ff">◆ teamId</text>
+<text x="201" y="316" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID FK</text>
+<line x1="20" y1="320" x2="210" y2="320" stroke="#21262d"/>
+<text x="30" y="334" font-family="monospace" font-size="10" fill="#e6edf3">createdAt</text>
+<text x="201" y="334" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">DateTime</text>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ENTITY: Server  x=255 y=200 w=225 h=228 -->
+<!-- ══════════════════════════════════════════════════ -->
+<rect x="255" y="200" width="225" height="228" rx="6" fill="#161b22" stroke="#30363d"/>
+<rect x="255" y="200" width="225" height="28" rx="6" fill="#059669"/>
+<rect x="255" y="218" width="225" height="10" fill="#059669"/>
+<text x="367" y="219" font-family="monospace" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle">Server</text>
+<text x="265" y="244" font-family="monospace" font-size="10" fill="#ffa657">● id</text>
+<text x="471" y="244" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID</text>
+<line x1="255" y1="248" x2="480" y2="248" stroke="#21262d"/>
+<text x="265" y="262" font-family="monospace" font-size="10" fill="#e6edf3">name</text>
+<text x="471" y="262" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="255" y1="266" x2="480" y2="266" stroke="#21262d"/>
+<text x="265" y="280" font-family="monospace" font-size="10" fill="#e6edf3">provider</text>
+<text x="471" y="280" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Provider</text>
+<line x1="255" y1="284" x2="480" y2="284" stroke="#21262d"/>
+<text x="265" y="298" font-family="monospace" font-size="10" fill="#e6edf3">region</text>
+<text x="471" y="298" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="255" y1="302" x2="480" y2="302" stroke="#21262d"/>
+<text x="265" y="316" font-family="monospace" font-size="10" fill="#e6edf3">ipAddress</text>
+<text x="471" y="316" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="255" y1="320" x2="480" y2="320" stroke="#21262d"/>
+<text x="265" y="334" font-family="monospace" font-size="10" fill="#e6edf3">cpu (cores)</text>
+<text x="471" y="334" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Int</text>
+<line x1="255" y1="338" x2="480" y2="338" stroke="#21262d"/>
+<text x="265" y="352" font-family="monospace" font-size="10" fill="#e6edf3">ram (GB)</text>
+<text x="471" y="352" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Int</text>
+<line x1="255" y1="356" x2="480" y2="356" stroke="#21262d"/>
+<text x="265" y="370" font-family="monospace" font-size="10" fill="#e6edf3">storage (GB)</text>
+<text x="471" y="370" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Int</text>
+<line x1="255" y1="374" x2="480" y2="374" stroke="#21262d"/>
+<text x="265" y="388" font-family="monospace" font-size="10" fill="#e6edf3">status</text>
+<text x="471" y="388" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">ServerStatus</text>
+<line x1="255" y1="392" x2="480" y2="392" stroke="#21262d"/>
+<text x="265" y="406" font-family="monospace" font-size="10" fill="#79c0ff">◆ projectId</text>
+<text x="471" y="406" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID FK</text>
+<line x1="255" y1="410" x2="480" y2="410" stroke="#21262d"/>
+<text x="265" y="424" font-family="monospace" font-size="10" fill="#e6edf3">createdAt</text>
+<text x="471" y="424" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">DateTime</text>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ENTITY: Application  x=535 y=200 w=200 h=156 -->
+<!-- ══════════════════════════════════════════════════ -->
+<rect x="535" y="200" width="200" height="156" rx="6" fill="#161b22" stroke="#30363d"/>
+<rect x="535" y="200" width="200" height="28" rx="6" fill="#059669"/>
+<rect x="535" y="218" width="200" height="10" fill="#059669"/>
+<text x="635" y="219" font-family="monospace" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle">Application</text>
+<text x="545" y="244" font-family="monospace" font-size="10" fill="#ffa657">● id</text>
+<text x="726" y="244" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID</text>
+<line x1="535" y1="248" x2="735" y2="248" stroke="#21262d"/>
+<text x="545" y="262" font-family="monospace" font-size="10" fill="#e6edf3">name</text>
+<text x="726" y="262" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="535" y1="266" x2="735" y2="266" stroke="#21262d"/>
+<text x="545" y="280" font-family="monospace" font-size="10" fill="#e6edf3">version</text>
+<text x="726" y="280" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="535" y1="284" x2="735" y2="284" stroke="#21262d"/>
+<text x="545" y="298" font-family="monospace" font-size="10" fill="#e6edf3">environment</text>
+<text x="726" y="298" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Env</text>
+<line x1="535" y1="302" x2="735" y2="302" stroke="#21262d"/>
+<text x="545" y="316" font-family="monospace" font-size="10" fill="#e6edf3">status</text>
+<text x="726" y="316" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">AppStatus</text>
+<line x1="535" y1="320" x2="735" y2="320" stroke="#21262d"/>
+<text x="545" y="334" font-family="monospace" font-size="10" fill="#79c0ff">◆ serverId</text>
+<text x="726" y="334" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID FK</text>
+<line x1="535" y1="338" x2="735" y2="338" stroke="#21262d"/>
+<text x="545" y="352" font-family="monospace" font-size="10" fill="#e6edf3">createdAt</text>
+<text x="726" y="352" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">DateTime</text>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ENTITY: Metric  x=535 y=430 w=200 h=156 -->
+<!-- ══════════════════════════════════════════════════ -->
+<rect x="535" y="430" width="200" height="156" rx="6" fill="#161b22" stroke="#30363d"/>
+<rect x="535" y="430" width="200" height="28" rx="6" fill="#d97706"/>
+<rect x="535" y="448" width="200" height="10" fill="#d97706"/>
+<text x="635" y="449" font-family="monospace" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle">Metric</text>
+<text x="545" y="474" font-family="monospace" font-size="10" fill="#ffa657">● id</text>
+<text x="726" y="474" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID</text>
+<line x1="535" y1="478" x2="735" y2="478" stroke="#21262d"/>
+<text x="545" y="492" font-family="monospace" font-size="10" fill="#e6edf3">cpuUsage (%)</text>
+<text x="726" y="492" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Float</text>
+<line x1="535" y1="496" x2="735" y2="496" stroke="#21262d"/>
+<text x="545" y="510" font-family="monospace" font-size="10" fill="#e6edf3">ramUsage (%)</text>
+<text x="726" y="510" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Float</text>
+<line x1="535" y1="514" x2="735" y2="514" stroke="#21262d"/>
+<text x="545" y="528" font-family="monospace" font-size="10" fill="#e6edf3">diskUsage (%)</text>
+<text x="726" y="528" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Float?</text>
+<line x1="535" y1="532" x2="735" y2="532" stroke="#21262d"/>
+<text x="545" y="546" font-family="monospace" font-size="10" fill="#79c0ff">◆ serverId</text>
+<text x="726" y="546" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID FK</text>
+<line x1="535" y1="550" x2="735" y2="550" stroke="#21262d"/>
+<text x="545" y="564" font-family="monospace" font-size="10" fill="#e6edf3">recordedAt</text>
+<text x="726" y="564" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">DateTime</text>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ENTITY: Alert  x=255 y=510 w=200 h=174 -->
+<!-- ══════════════════════════════════════════════════ -->
+<rect x="255" y="510" width="200" height="174" rx="6" fill="#161b22" stroke="#30363d"/>
+<rect x="255" y="510" width="200" height="28" rx="6" fill="#dc2626"/>
+<rect x="255" y="528" width="200" height="10" fill="#dc2626"/>
+<text x="355" y="529" font-family="monospace" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle">Alert</text>
+<text x="265" y="554" font-family="monospace" font-size="10" fill="#ffa657">● id</text>
+<text x="446" y="554" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID</text>
+<line x1="255" y1="558" x2="455" y2="558" stroke="#21262d"/>
+<text x="265" y="572" font-family="monospace" font-size="10" fill="#e6edf3">name</text>
+<text x="446" y="572" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="255" y1="576" x2="455" y2="576" stroke="#21262d"/>
+<text x="265" y="590" font-family="monospace" font-size="10" fill="#e6edf3">metricType</text>
+<text x="446" y="590" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">MetricType</text>
+<line x1="255" y1="594" x2="455" y2="594" stroke="#21262d"/>
+<text x="265" y="608" font-family="monospace" font-size="10" fill="#e6edf3">threshold</text>
+<text x="446" y="608" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Float</text>
+<line x1="255" y1="612" x2="455" y2="612" stroke="#21262d"/>
+<text x="265" y="626" font-family="monospace" font-size="10" fill="#e6edf3">severity</text>
+<text x="446" y="626" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Severity</text>
+<line x1="255" y1="630" x2="455" y2="630" stroke="#21262d"/>
+<text x="265" y="644" font-family="monospace" font-size="10" fill="#e6edf3">isActive</text>
+<text x="446" y="644" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Boolean</text>
+<line x1="255" y1="648" x2="455" y2="648" stroke="#21262d"/>
+<text x="265" y="662" font-family="monospace" font-size="10" fill="#79c0ff">◆ serverId</text>
+<text x="446" y="662" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID FK</text>
+<line x1="255" y1="666" x2="455" y2="666" stroke="#21262d"/>
+<text x="265" y="680" font-family="monospace" font-size="10" fill="#e6edf3">createdAt</text>
+<text x="446" y="680" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">DateTime</text>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ENTITY: Incident  x=20 y=510 w=200 h=138 -->
+<!-- ══════════════════════════════════════════════════ -->
+<rect x="20" y="510" width="200" height="138" rx="6" fill="#161b22" stroke="#30363d"/>
+<rect x="20" y="510" width="200" height="28" rx="6" fill="#b91c1c"/>
+<rect x="20" y="528" width="200" height="10" fill="#b91c1c"/>
+<text x="120" y="529" font-family="monospace" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle">Incident</text>
+<text x="30" y="554" font-family="monospace" font-size="10" fill="#ffa657">● id</text>
+<text x="211" y="554" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID</text>
+<line x1="20" y1="558" x2="220" y2="558" stroke="#21262d"/>
+<text x="30" y="572" font-family="monospace" font-size="10" fill="#e6edf3">message</text>
+<text x="211" y="572" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">String</text>
+<line x1="20" y1="576" x2="220" y2="576" stroke="#21262d"/>
+<text x="30" y="590" font-family="monospace" font-size="10" fill="#e6edf3">value</text>
+<text x="211" y="590" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">Float</text>
+<line x1="20" y1="594" x2="220" y2="594" stroke="#21262d"/>
+<text x="30" y="608" font-family="monospace" font-size="10" fill="#e6edf3">resolvedAt</text>
+<text x="211" y="608" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">DateTime?</text>
+<line x1="20" y1="612" x2="220" y2="612" stroke="#21262d"/>
+<text x="30" y="626" font-family="monospace" font-size="10" fill="#79c0ff">◆ alertId</text>
+<text x="211" y="626" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">UUID FK</text>
+<line x1="20" y1="630" x2="220" y2="630" stroke="#21262d"/>
+<text x="30" y="644" font-family="monospace" font-size="10" fill="#e6edf3">createdAt</text>
+<text x="211" y="644" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="end">DateTime</text>
+
+<!-- LEGEND BAR -->
+<rect x="0" y="694" width="760" height="28" fill="#161b22"/>
+<line x1="0" y1="694" x2="760" y2="694" stroke="#30363d"/>
+<text x="18" y="712" font-family="monospace" font-size="10" fill="#ffa657">● PK</text>
+<text x="45" y="712" font-family="monospace" font-size="10" fill="#8b949e">Primary Key</text>
+<text x="175" y="712" font-family="monospace" font-size="10" fill="#79c0ff">◆ FK</text>
+<text x="202" y="712" font-family="monospace" font-size="10" fill="#8b949e">Foreign Key</text>
+<text x="340" y="712" font-family="monospace" font-size="10" fill="#8b949e">? Nullable field</text>
+<text x="480" y="712" font-family="monospace" font-size="10" fill="#58a6ff">- - ▶ 1:N</text>
+<text x="540" y="712" font-family="monospace" font-size="10" fill="#8b949e">One-to-Many</text>
+<text x="670" y="712" font-family="monospace" font-size="10" fill="#8b949e">8 entities · 7 FK</text>
+</svg>
+  </div>
+
+  <div class="leg">
+    <div class="li"><div class="dot" style="background:#2563eb"></div> Identity — Team, User</div>
+    <div class="li"><div class="dot" style="background:#7c3aed"></div> Project Management</div>
+    <div class="li"><div class="dot" style="background:#059669"></div> Infrastructure — Server, Application</div>
+    <div class="li"><div class="dot" style="background:#d97706"></div> Monitoring — Metric</div>
+    <div class="li"><div class="dot" style="background:#dc2626"></div> Alerting — Alert, Incident</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ ARCHITECTURE TAB ═══════════════════════════ -->
+<div id="arch" class="panel">
+  <div class="card">
+<svg viewBox="0 0 640 400" width="100%" style="max-width:640px;display:block;min-width:400px" xmlns="http://www.w3.org/2000/svg">
+<rect width="640" height="400" fill="#0d1117"/>
+
+<!-- Docker Compose boundary -->
+<rect x="180" y="20" width="440" height="290" rx="8" fill="none" stroke="#30363d" stroke-width="1.5" stroke-dasharray="8,4"/>
+<text x="196" y="40" font-family="monospace" font-size="11" fill="#8b949e">🐳 Docker Compose</text>
+
+<!-- Next.js box -->
+<rect x="210" y="70" width="150" height="70" rx="6" fill="#1a2744" stroke="#2563eb" stroke-width="1.5"/>
+<text x="285" y="100" font-family="monospace" font-size="13" font-weight="bold" fill="#79c0ff" text-anchor="middle">Next.js</text>
+<text x="285" y="118" font-family="monospace" font-size="10" fill="#8b949e" text-anchor="middle">App Router · port 3000</text>
+
+<!-- NestJS box -->
+<rect x="430" y="70" width="150" height="70" rx="6" fill="#0d2b1a" stroke="#059669" stroke-width="1.5"/>
+<text x="505" y="100" font-family="monospace" font-size="13" font-weight="bold" fill="#3fb950" text-anchor="middle">NestJS</text>
+<text x="505" y="118" font-family="monospace" font-size="10" fill="#8b949e" text-anchor="middle">REST API · port 3001</text>
+
+<!-- PostgreSQL box -->
+<rect x="430" y="210" width="150" height="70" rx="6" fill="#261a00" stroke="#d97706" stroke-width="1.5"/>
+<text x="505" y="240" font-family="monospace" font-size="13" font-weight="bold" fill="#ffa657" text-anchor="middle">PostgreSQL</text>
+<text x="505" y="258" font-family="monospace" font-size="10" fill="#8b949e" text-anchor="middle">Prisma ORM · port 5432</text>
+
+<!-- Browser box -->
+<rect x="20" y="90" width="120" height="55" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+<text x="80" y="113" font-family="monospace" font-size="12" font-weight="bold" fill="#e6edf3" text-anchor="middle">Browser</text>
+<text x="80" y="130" font-family="monospace" font-size="10" fill="#8b949e" text-anchor="middle">Client</text>
+
+<!-- AWS bonus box (dashed) -->
+<rect x="10" y="340" width="620" height="50" rx="6" fill="none" stroke="#f97316" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="30" y="362" font-family="monospace" font-size="10" fill="#f97316">☁ AWS (BONUS +2pts)</text>
+<text x="30" y="378" font-family="monospace" font-size="10" fill="#8b949e">EC2 → app containers · RDS PostgreSQL · ECR (images) · ALB (load balancer)</text>
+
+<!-- ARROWS -->
+<!-- Browser → Next.js: HTTPS -->
+<line x1="140" y1="117" x2="207" y2="105" stroke="#58a6ff" stroke-width="1.5"/>
+<polygon points="203,99 212,104 204,109" fill="#58a6ff"/>
+<text x="165" y="104" font-family="monospace" font-size="9" fill="#58a6ff" text-anchor="middle">HTTPS</text>
+
+<!-- Next.js → NestJS: REST API -->
+<line x1="360" y1="105" x2="427" y2="105" stroke="#3fb950" stroke-width="1.5"/>
+<polygon points="423,101 432,105 423,109" fill="#3fb950"/>
+<text x="394" y="98" font-family="monospace" font-size="9" fill="#3fb950" text-anchor="middle">REST API</text>
+<text x="394" y="112" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="middle">JWT Auth</text>
+
+<!-- NestJS → PostgreSQL: Prisma -->
+<line x1="505" y1="140" x2="505" y2="207" stroke="#ffa657" stroke-width="1.5"/>
+<polygon points="501,203 505,212 509,203" fill="#ffa657"/>
+<text x="518" y="178" font-family="monospace" font-size="9" fill="#ffa657">Prisma</text>
+
+<!-- Swagger note -->
+<rect x="210" y="210" width="160" height="70" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+<text x="290" y="232" font-family="monospace" font-size="10" font-weight="bold" fill="#e6edf3" text-anchor="middle">📄 Swagger UI</text>
+<text x="290" y="250" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="middle">Auto-generated docs</text>
+<text x="290" y="266" font-family="monospace" font-size="9" fill="#8b949e" text-anchor="middle">20+ REST endpoints</text>
+<!-- Swagger → NestJS line (dashed) -->
+<line x1="370" y1="245" x2="427" y2="215" stroke="#30363d" stroke-width="1" stroke-dasharray="3,2"/>
+
+<!-- Periodic metric simulation note -->
+<rect x="210" y="295" width="370" height="30" rx="4" fill="#21262d" stroke="#30363d"/>
+<text x="398" y="315" font-family="monospace" font-size="10" fill="#d97706" text-anchor="middle">⏱ Cron job: simulated CPU/RAM metrics every 30s (Week 6)</text>
+</svg>
+  </div>
+  <div class="arch-note">
+    <strong>Local dev:</strong> run <code>docker compose up -d</code> — spins up Next.js + NestJS + PostgreSQL together.<br>
+    <strong>Week 7 deployment:</strong> same Compose file works on a VPS. For the AWS bonus (+2 pts): EC2 + RDS (PostgreSQL managed) + ECR for container images.
+  </div>
+</div>
+
+<!-- ═══════════════════════════ SCHEMA TAB ═══════════════════════════ -->
+<div id="schema" class="panel">
+  <div class="card">
+    <pre><span class="cm">// prisma/schema.prisma</span>
+
+<span class="kw">generator</span> client {
+  provider = <span class="st">"prisma-client-js"</span>
+}
+
+<span class="kw">datasource</span> db {
+  provider = <span class="st">"postgresql"</span>
+  url      = <span class="at">env</span>(<span class="st">"DATABASE_URL"</span>)
+}
+
+<span class="cm">// ─── ENUMS ───────────────────────────────────────────</span>
+
+<span class="kw">enum</span> <span class="en">Role</span>         { ADMIN DEVOPS VIEWER }
+<span class="kw">enum</span> <span class="en">Environment</span>  { DEVELOPMENT STAGING PRODUCTION }
+<span class="kw">enum</span> <span class="en">ProjectStatus</span>{ ACTIVE ARCHIVED PAUSED }
+<span class="kw">enum</span> <span class="en">Provider</span>     { AWS AZURE GCP HETZNER OVH OTHER }
+<span class="kw">enum</span> <span class="en">ServerStatus</span> { ONLINE OFFLINE MAINTENANCE }
+<span class="kw">enum</span> <span class="en">AppStatus</span>    { RUNNING STOPPED ERROR }
+<span class="kw">enum</span> <span class="en">MetricType</span>   { CPU RAM DISK }
+<span class="kw">enum</span> <span class="en">Severity</span>     { INFO WARNING CRITICAL }
+
+<span class="cm">// ─── MODELS ──────────────────────────────────────────</span>
+
+<span class="kw">model</span> <span class="ty">Team</span> {
+  id          <span class="ty">String</span>   <span class="at">@id @default(uuid())</span>
+  name        <span class="ty">String</span>
+  description <span class="ty">String?</span>
+  createdAt   <span class="ty">DateTime</span> <span class="at">@default(now())</span>
+
+  users    <span class="ty">User[]</span>
+  projects <span class="ty">Project[]</span>
+}
+
+<span class="kw">model</span> <span class="ty">User</span> {
+  id           <span class="ty">String</span>   <span class="at">@id @default(uuid())</span>
+  email        <span class="ty">String</span>   <span class="at">@unique</span>
+  passwordHash <span class="ty">String</span>
+  firstName    <span class="ty">String</span>
+  lastName     <span class="ty">String</span>
+  role         <span class="en">Role</span>     <span class="at">@default(VIEWER)</span>
+  createdAt    <span class="ty">DateTime</span> <span class="at">@default(now())</span>
+
+  teamId <span class="ty">String</span>
+  team   <span class="ty">Team</span>   <span class="at">@relation(fields: [teamId], references: [id])</span>
+}
+
+<span class="kw">model</span> <span class="ty">Project</span> {
+  id          <span class="ty">String</span>        <span class="at">@id @default(uuid())</span>
+  name        <span class="ty">String</span>
+  description <span class="ty">String?</span>
+  environment <span class="en">Environment</span>   <span class="at">@default(DEVELOPMENT)</span>
+  status      <span class="en">ProjectStatus</span> <span class="at">@default(ACTIVE)</span>
+  createdAt   <span class="ty">DateTime</span>      <span class="at">@default(now())</span>
+
+  teamId  <span class="ty">String</span>
+  team    <span class="ty">Team</span>     <span class="at">@relation(fields: [teamId], references: [id])</span>
+  servers <span class="ty">Server[]</span>
+}
+
+<span class="kw">model</span> <span class="ty">Server</span> {
+  id        <span class="ty">String</span>       <span class="at">@id @default(uuid())</span>
+  name      <span class="ty">String</span>
+  provider  <span class="en">Provider</span>
+  region    <span class="ty">String</span>
+  ipAddress <span class="ty">String</span>
+  cpu       <span class="ty">Int</span>          <span class="cm">// cores</span>
+  ram       <span class="ty">Int</span>          <span class="cm">// GB</span>
+  storage   <span class="ty">Int</span>          <span class="cm">// GB</span>
+  status    <span class="en">ServerStatus</span> <span class="at">@default(OFFLINE)</span>
+  createdAt <span class="ty">DateTime</span>     <span class="at">@default(now())</span>
+
+  projectId    <span class="ty">String</span>
+  project      <span class="ty">Project</span>       <span class="at">@relation(fields: [projectId], references: [id])</span>
+  applications <span class="ty">Application[]</span>
+  metrics      <span class="ty">Metric[]</span>
+  alerts       <span class="ty">Alert[]</span>
+}
+
+<span class="kw">model</span> <span class="ty">Application</span> {
+  id          <span class="ty">String</span>      <span class="at">@id @default(uuid())</span>
+  name        <span class="ty">String</span>
+  version     <span class="ty">String</span>
+  environment <span class="en">Environment</span>
+  status      <span class="en">AppStatus</span>   <span class="at">@default(STOPPED)</span>
+  createdAt   <span class="ty">DateTime</span>    <span class="at">@default(now())</span>
+
+  serverId <span class="ty">String</span>
+  server   <span class="ty">Server</span> <span class="at">@relation(fields: [serverId], references: [id])</span>
+}
+
+<span class="kw">model</span> <span class="ty">Metric</span> {
+  id         <span class="ty">String</span>   <span class="at">@id @default(uuid())</span>
+  cpuUsage   <span class="ty">Float</span>    <span class="cm">// percentage 0-100</span>
+  ramUsage   <span class="ty">Float</span>    <span class="cm">// percentage 0-100</span>
+  diskUsage  <span class="ty">Float?</span>   <span class="cm">// percentage 0-100 (optional)</span>
+  recordedAt <span class="ty">DateTime</span> <span class="at">@default(now())</span>
+
+  serverId <span class="ty">String</span>
+  server   <span class="ty">Server</span> <span class="at">@relation(fields: [serverId], references: [id])</span>
+}
+
+<span class="kw">model</span> <span class="ty">Alert</span> {
+  id         <span class="ty">String</span>     <span class="at">@id @default(uuid())</span>
+  name       <span class="ty">String</span>
+  metricType <span class="en">MetricType</span>
+  threshold  <span class="ty">Float</span>      <span class="cm">// e.g. 80.0 for 80% CPU</span>
+  severity   <span class="en">Severity</span>   <span class="at">@default(WARNING)</span>
+  isActive   <span class="ty">Boolean</span>    <span class="at">@default(true)</span>
+  createdAt  <span class="ty">DateTime</span>   <span class="at">@default(now())</span>
+
+  serverId  <span class="ty">String</span>
+  server    <span class="ty">Server</span>     <span class="at">@relation(fields: [serverId], references: [id])</span>
+  incidents <span class="ty">Incident[]</span>
+}
+
+<span class="kw">model</span> <span class="ty">Incident</span> {
+  id         <span class="ty">String</span>    <span class="at">@id @default(uuid())</span>
+  message    <span class="ty">String</span>
+  value      <span class="ty">Float</span>     <span class="cm">// metric value that triggered the alert</span>
+  resolvedAt <span class="ty">DateTime?</span>
+  createdAt  <span class="ty">DateTime</span>  <span class="at">@default(now())</span>
+
+  alertId <span class="ty">String</span>
+  alert   <span class="ty">Alert</span>  <span class="at">@relation(fields: [alertId], references: [id])</span>
+}</pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ ENUMS TAB ═══════════════════════════ -->
+<div id="enums" class="panel">
+  <p style="margin-bottom:14px;font-size:12px;color:var(--muted)">8 enums — copy these directly into your schema.prisma</p>
+  <div class="enum-grid">
+    <div class="enum-card">
+      <div class="enum-head" style="background:#2563eb22;color:#79c0ff">Role</div>
+      <div class="enum-val">ADMIN — full access</div>
+      <div class="enum-val">DEVOPS — manage infra</div>
+      <div class="enum-val">VIEWER — read only</div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-head" style="background:#7c3aed22;color:#d2a8ff">Environment</div>
+      <div class="enum-val">DEVELOPMENT</div>
+      <div class="enum-val">STAGING</div>
+      <div class="enum-val">PRODUCTION</div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-head" style="background:#7c3aed22;color:#d2a8ff">ProjectStatus</div>
+      <div class="enum-val">ACTIVE</div>
+      <div class="enum-val">ARCHIVED</div>
+      <div class="enum-val">PAUSED</div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-head" style="background:#05996922;color:#3fb950">Provider</div>
+      <div class="enum-val">AWS</div>
+      <div class="enum-val">AZURE</div>
+      <div class="enum-val">GCP</div>
+      <div class="enum-val">HETZNER</div>
+      <div class="enum-val">OVH</div>
+      <div class="enum-val">OTHER</div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-head" style="background:#05996922;color:#3fb950">ServerStatus</div>
+      <div class="enum-val">ONLINE</div>
+      <div class="enum-val">OFFLINE</div>
+      <div class="enum-val">MAINTENANCE</div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-head" style="background:#05996922;color:#3fb950">AppStatus</div>
+      <div class="enum-val">RUNNING</div>
+      <div class="enum-val">STOPPED</div>
+      <div class="enum-val">ERROR</div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-head" style="background:#d9770622;color:#ffa657">MetricType</div>
+      <div class="enum-val">CPU</div>
+      <div class="enum-val">RAM</div>
+      <div class="enum-val">DISK</div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-head" style="background:#dc262622;color:#f87171">Severity</div>
+      <div class="enum-val">INFO</div>
+      <div class="enum-val">WARNING</div>
+      <div class="enum-val">CRITICAL</div>
+    </div>
+  </div>
+  <div class="arch-note" style="margin-top:16px">
+    <strong>Week 1 tip:</strong> define all enums in <code>schema.prisma</code> first, even before models. 
+    Run <code>npx prisma migrate dev --name init</code> after defining all 8 models. 
+    This creates the PostgreSQL types automatically — no manual SQL needed.
+  </div>
+</div>
+
+<script>
+  function show(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+    document.getElementById(id).classList.add('on');
+    btn.classList.add('on');
+  }
+</script>
+</body>
+</html>
