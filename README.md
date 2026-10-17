@@ -27,26 +27,7 @@
 
 ---
 
-## 🏛️ System Architecture
 
-[Link text](https://mohamed-amine-ouertani.github.io/cloudops-manager/)
-```text
-               ┌─────────────────────────────────────┐
-               │            Browser (User)           │
-               └──────────────┬──────────────────────┘
-                              │ HTTPS
-               ┌──────────────▼──────────────────────┐
-               │         Next.js Frontend            │
-               │         (App Router, TypeScript)    │
-               └──────────────┬──────────────────────┘
-                              │ REST API calls
-               ┌──────────────▼──────────────────────┐
-               │         NestJS Backend              │
-               │         (JWT, Guards, Swagger)      │
-               └──────┬───────────────────┬──────────┘
-                      │                   │
-               ┌──────▼──────┐    ┌───────▼──────────┐
-               │ PostgreSQL  │    │  Redis (Caching) │
-               │  (Prisma)   │    │    (Optional)    │
-               └─────────────┘    └──────────────────┘
+
+[## 🏛️ System Architecture](https://mohamed-amine-ouertani.github.io/cloudops-manager/)
 
