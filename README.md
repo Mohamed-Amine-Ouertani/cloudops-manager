@@ -29,6 +29,7 @@
 
 ## 🏛️ System Architecture
 
+[Link text](https://mohamed-amine-ouertani.github.io/cloudops-manager/)
 ```text
                ┌─────────────────────────────────────┐
                │            Browser (User)           │
@@ -48,3 +49,4 @@
                │ PostgreSQL  │    │  Redis (Caching) │
                │  (Prisma)   │    │    (Optional)    │
                └─────────────┘    └──────────────────┘
+
